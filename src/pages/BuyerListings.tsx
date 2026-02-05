@@ -4,11 +4,13 @@ import { Search, Filter, MapPin, Sparkles, Bookmark, Package, ChevronDown, X } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BuyerBottomNav from "@/components/BuyerBottomNav";
+import { useListings } from "@/context/ListingsContext";
 
 const BuyerListings = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const { buyerListings: listings, toggleBookmark } = useListings();
 
   const filters = [
     { id: "all", label: "All Types" },
@@ -24,79 +26,6 @@ const BuyerListings = () => {
     { id: "price", label: "Price Range", options: ["Below ₹3/kg", "₹3-5/kg", "Above ₹5/kg"] },
     { id: "quality", label: "Quality", options: ["Excellent", "Good", "Average"] },
   ];
-
-  const listings = [
-    {
-      id: 1,
-      title: "Rice Husk",
-      quantity: "500 kg",
-      price: "₹5/kg",
-      location: "Pune, Maharashtra",
-      quality: "Good",
-      confidence: 94,
-      farmerName: "Rajesh Kumar",
-      image: "/placeholder.svg",
-      date: "2024-01-15",
-      isBookmarked: false,
-    },
-    {
-      id: 2,
-      title: "Wheat Straw",
-      quantity: "1 ton",
-      price: "₹3/kg",
-      location: "Nashik, Maharashtra",
-      quality: "Excellent",
-      confidence: 98,
-      farmerName: "Amit Patil",
-      image: "/placeholder.svg",
-      date: "2024-01-14",
-      isBookmarked: true,
-    },
-    {
-      id: 3,
-      title: "Sugarcane Bagasse",
-      quantity: "2 tons",
-      price: "₹4/kg",
-      location: "Kolhapur, Maharashtra",
-      quality: "Good",
-      confidence: 91,
-      farmerName: "Suresh Jadhav",
-      image: "/placeholder.svg",
-      date: "2024-01-13",
-      isBookmarked: false,
-    },
-    {
-      id: 4,
-      title: "Cotton Stalks",
-      quantity: "800 kg",
-      price: "₹2/kg",
-      location: "Nagpur, Maharashtra",
-      quality: "Average",
-      confidence: 85,
-      farmerName: "Ramesh Deshmukh",
-      image: "/placeholder.svg",
-      date: "2024-01-12",
-      isBookmarked: false,
-    },
-    {
-      id: 5,
-      title: "Rice Husk",
-      quantity: "1.2 tons",
-      price: "₹4.5/kg",
-      location: "Mumbai, Maharashtra",
-      quality: "Excellent",
-      confidence: 96,
-      farmerName: "Vijay Sharma",
-      image: "/placeholder.svg",
-      date: "2024-01-11",
-      isBookmarked: true,
-    },
-  ];
-
-  const toggleBookmark = (id: number) => {
-    // In a real app, this would update the backend
-    console.log(`Toggled bookmark for listing ${id}`);
-  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -214,7 +143,7 @@ const BuyerListings = () => {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-semibold text-foreground">{listing.title}</h3>
-                      <p className="text-sm text-muted-foreground">{listing.quantity}</p>
+                      <p className="text-sm text-muted-foreground">{listing.quantity} {listing.unit}</p>
                     </div>
                     <button 
                       onClick={(e) => {
@@ -227,7 +156,7 @@ const BuyerListings = () => {
                           : "text-muted-foreground hover:text-secondary"
                       }`}
                     >
-                      <Bookmark className={`w-5 h-5 ${listing.isBookmarked ? 'fill-current' : ''}`} />
+                      <Bookmark className={`w-5 h-5 ${listing.isBookmarked ? "fill-current" : ""}`} />
                     </button>
                   </div>
 

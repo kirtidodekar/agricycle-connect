@@ -2,50 +2,10 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Package, TrendingUp, MapPin, Calendar, MoreVertical, Eye, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FarmerBottomNav from "@/components/FarmerBottomNav";
+import { useListings } from "@/context/ListingsContext";
 
 const FarmerListings = () => {
-  const listings = [
-    { 
-      id: 1, 
-      name: "Rice Husk", 
-      quantity: "500 kg", 
-      status: "active", 
-      inquiries: 2, 
-      price: "₹5/kg",
-      date: "2024-01-15",
-      location: "Pune, Maharashtra"
-    },
-    { 
-      id: 2, 
-      name: "Wheat Straw", 
-      quantity: "1 ton", 
-      status: "active", 
-      inquiries: 3, 
-      price: "₹3/kg",
-      date: "2024-01-14",
-      location: "Pune, Maharashtra"
-    },
-    { 
-      id: 3, 
-      name: "Sugarcane Bagasse", 
-      quantity: "2 tons", 
-      status: "sold", 
-      inquiries: 5, 
-      price: "₹4/kg",
-      date: "2024-01-10",
-      location: "Pune, Maharashtra"
-    },
-    { 
-      id: 4, 
-      name: "Cotton Stalks", 
-      quantity: "800 kg", 
-      status: "draft", 
-      inquiries: 0, 
-      price: "₹2.5/kg",
-      date: "2024-01-12",
-      location: "Pune, Maharashtra"
-    },
-  ];
+  const { farmerListings: listings, updateListing } = useListings();
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -60,6 +20,10 @@ const FarmerListings = () => {
         {config.label}
       </span>
     );
+  };
+
+  const handleDelete = (id: number) => {
+    updateListing(id, { status: "draft" });
   };
 
   return (
@@ -107,11 +71,11 @@ const FarmerListings = () => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-foreground">{listing.name}</h3>
+                      <h3 className="font-semibold text-foreground">{listing.title}</h3>
                       {getStatusBadge(listing.status)}
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">
-                      {listing.quantity} • {listing.price}
+                      {listing.quantity} {listing.unit} • ₹{listing.price}/{listing.unit}
                     </p>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -155,7 +119,12 @@ const FarmerListings = () => {
                       Complete
                     </Button>
                   )}
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => handleDelete(listing.id)}
+                  >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>

@@ -2,41 +2,12 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Package, MapPin, Sparkles, Bookmark, Trash2, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BuyerBottomNav from "@/components/BuyerBottomNav";
+import { useListings } from "@/context/ListingsContext";
 
 const BuyerShortlist = () => {
-  const shortlistedItems = [
-    {
-      id: 2,
-      title: "Wheat Straw",
-      quantity: "1 ton",
-      price: "₹3/kg",
-      location: "Nashik, Maharashtra",
-      quality: "Excellent",
-      confidence: 98,
-      farmerName: "Amit Patil",
-      image: "/placeholder.svg",
-      date: "2024-01-14",
-      isBookmarked: true,
-    },
-    {
-      id: 5,
-      title: "Rice Husk",
-      quantity: "1.2 tons",
-      price: "₹4.5/kg",
-      location: "Mumbai, Maharashtra",
-      quality: "Excellent",
-      confidence: 96,
-      farmerName: "Vijay Sharma",
-      image: "/placeholder.svg",
-      date: "2024-01-11",
-      isBookmarked: true,
-    },
-  ];
-
-  const removeFromShortlist = (id: number) => {
-    // In a real app, this would update the backend
-    console.log(`Removed item ${id} from shortlist`);
-  };
+  const { buyerListings, toggleBookmark } = useListings();
+  
+  const shortlistedItems = buyerListings.filter(item => item.isBookmarked);
 
   const contactSeller = (id: number) => {
     // In a real app, this would open a message thread
@@ -103,7 +74,7 @@ const BuyerShortlist = () => {
                           <button 
                             onClick={(e) => {
                               e.preventDefault();
-                              removeFromShortlist(item.id);
+                              toggleBookmark(item.id);
                             }}
                             className="p-2 -m-2 text-destructive hover:text-destructive/80"
                           >
@@ -157,7 +128,7 @@ const BuyerShortlist = () => {
                       variant="secondary" 
                       size="sm" 
                       className="flex-1"
-                      onClick={() => removeFromShortlist(item.id)}
+                      onClick={() => toggleBookmark(item.id)}
                     >
                       <Bookmark className="w-4 h-4 mr-2 fill-current" />
                       Remove

@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useListings } from "@/context/ListingsContext";
 
 const ListingDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { addListing } = useListings();
 
   const analysis = location.state?.analysis || {
     wasteType: "Rice Husk",
@@ -31,7 +33,22 @@ const ListingDetails = () => {
 
   const handlePublish = async () => {
     setIsPublishing(true);
+    
+    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    // Save listing to context
+    addListing({
+      title: formData.title,
+      quantity: formData.quantity,
+      unit: formData.unit,
+      price: formData.price,
+      description: formData.description,
+      availability: formData.availability,
+      quality: analysis.quality,
+      location: "Pune, Maharashtra",
+      farmerName: "Rajesh Kumar",
+    });
 
     toast({
       title: "Listing Published! 🎉",
