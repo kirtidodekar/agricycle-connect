@@ -1,7 +1,7 @@
-const express = require('express');
-const multer = require('multer');
-const axios = require('axios');
-const sharp = require('sharp');
+import express from "express";
+import multer from "multer";
+import axios from "axios";
+import sharp from "sharp";
 const router = express.Router();
 
 // Configure multer for file uploads
@@ -176,4 +176,4 @@ router.get('/health', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;
