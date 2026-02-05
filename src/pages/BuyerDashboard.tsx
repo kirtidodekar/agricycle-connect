@@ -4,10 +4,12 @@ import { Search, Filter, MapPin, Sparkles, Bookmark, Package, ChevronDown } from
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BuyerBottomNav from "@/components/BuyerBottomNav";
+import { useListings } from "@/context/ListingsContext";
 
 const BuyerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const { buyerListings: listings, toggleBookmark } = useListings();
 
   const filters = [
     { id: "all", label: "All" },
@@ -15,53 +17,6 @@ const BuyerDashboard = () => {
     { id: "wheat-straw", label: "Wheat Straw" },
     { id: "sugarcane", label: "Sugarcane" },
     { id: "cotton", label: "Cotton" },
-  ];
-
-  const listings = [
-    {
-      id: 1,
-      title: "Rice Husk",
-      quantity: "500 kg",
-      price: "₹5/kg",
-      location: "Pune, Maharashtra",
-      quality: "Good",
-      confidence: 94,
-      farmerName: "Rajesh Kumar",
-      image: "/placeholder.svg",
-    },
-    {
-      id: 2,
-      title: "Wheat Straw",
-      quantity: "1 ton",
-      price: "₹3/kg",
-      location: "Nashik, Maharashtra",
-      quality: "Excellent",
-      confidence: 98,
-      farmerName: "Amit Patil",
-      image: "/placeholder.svg",
-    },
-    {
-      id: 3,
-      title: "Sugarcane Bagasse",
-      quantity: "2 tons",
-      price: "₹4/kg",
-      location: "Kolhapur, Maharashtra",
-      quality: "Good",
-      confidence: 91,
-      farmerName: "Suresh Jadhav",
-      image: "/placeholder.svg",
-    },
-    {
-      id: 4,
-      title: "Cotton Stalks",
-      quantity: "800 kg",
-      price: "₹2/kg",
-      location: "Nagpur, Maharashtra",
-      quality: "Average",
-      confidence: 85,
-      farmerName: "Ramesh Deshmukh",
-      image: "/placeholder.svg",
-    },
   ];
 
   return (
@@ -135,10 +90,20 @@ const BuyerDashboard = () => {
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <h3 className="font-semibold text-foreground">{listing.title}</h3>
-                    <p className="text-sm text-muted-foreground">{listing.quantity}</p>
+                    <p className="text-sm text-muted-foreground">{listing.quantity} {listing.unit}</p>
                   </div>
-                  <button className="p-2 -m-2 text-muted-foreground hover:text-secondary">
-                    <Bookmark className="w-5 h-5" />
+                  <button 
+                    className={`p-2 -m-2 transition-colors ${
+                      listing.isBookmarked 
+                        ? "text-secondary" 
+                        : "text-muted-foreground hover:text-secondary"
+                    }`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleBookmark(listing.id);
+                    }}
+                  >
+                    <Bookmark className={`w-5 h-5 ${listing.isBookmarked ? "fill-current" : ""}`} />
                   </button>
                 </div>
 

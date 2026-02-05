@@ -1,33 +1,99 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Sparkles, Check, Loader2, Leaf, TrendingUp, Factory, ArrowRight } from "lucide-react";
+import { Sparkles, Check, Loader2, Leaf, TrendingUp, Factory, ArrowRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const AIAnalysis = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const imageUrl = location.state?.image || "/placeholder.svg";
 
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const analysisResults = {
-    wasteType: "Rice Husk",
+  const [analysisResults, setAnalysisResults] = useState({
+    wasteType: "Analyzing...",
     quality: "Good",
-    confidence: 94,
-    suggestedPrice: "₹4 - ₹6 per kg",
-    industries: ["Biomass Energy", "Composite Materials", "Animal Feed"],
-    estimatedWeight: "~500 kg",
-  };
+    confidence: 0,
+    suggestedPrice: "₹0 - ₹0 per kg",
+    industries: [] as string[],
+    estimatedWeight: "Calculating...",
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    analyzeImage();
+  }, []);
+
+  const analyzeImage = async () => {
+    try {
+      setIsAnalyzing(true);
+      setError(null);
+      
+      // Convert data URL to blob
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      // Create FormData
+      const formData = new FormData();
+      formData.append('image', blob, 'waste-image.jpg');
+      
+      // Send to backend API
+      const apiResponse = await fetch('http://localhost:5000/api/ai/analyze-image', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!apiResponse.ok) {
+        const errorData = await apiResponse.json();
+        throw new Error(errorData.message || 'Analysis failed');
+      }
+      
+      const data = await apiResponse.json();
+      
+      // Update results
+      setAnalysisResults({
+        wasteType: data.wasteType,
+        quality: data.quality,
+        confidence: data.confidence,
+        suggestedPrice: data.suggestedPrice,
+        industries: data.industries,
+        estimatedWeight: data.estimatedWeight,
+      });
+      
       setIsAnalyzing(false);
       setAnalysisComplete(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
+      
+      toast({
+        title: "Analysis Complete! 🎉",
+        description: `Identified as ${data.wasteType} with ${data.confidence}% confidence`,
+      });
+      
+    } catch (err) {
+      console.error('Analysis error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to analyze image');
+      setIsAnalyzing(false);
+      
+      // Fallback results
+      setAnalysisResults({
+        wasteType: "Rice Husk",
+        quality: "Good",
+        confidence: 88,
+        suggestedPrice: "₹4 - ₹6 per kg",
+        industries: ["Biomass Energy", "Composting", "Animal Feed"],
+        estimatedWeight: "200-800 kg",
+      });
+      setAnalysisComplete(true);
+      
+      toast({
+        title: "Analysis Completed with Fallback",
+        description: "Using default values due to API error",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleContinue = () => {
     navigate("/farmer/listing-details", { state: { analysis: analysisResults, image: imageUrl } });
@@ -60,12 +126,18 @@ const AIAnalysis = () => {
         {/* Analyzing Badge */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md ${
+            error ? "bg-destructive text-destructive-foreground" :
             analysisComplete ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
           }`}>
             {isAnalyzing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm font-medium">Analyzing...</span>
+                <span className="text-sm font-medium">Analyzing with Grok AI...</span>
+              </>
+            ) : error ? (
+              <>
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">Analysis Error</span>
               </>
             ) : (
               <>
@@ -90,7 +162,7 @@ const AIAnalysis = () => {
           </h1>
         </div>
 
-        {analysisComplete && (
+        {analysisComplete && !error && (
           <div className="stagger-children space-y-4">
             {/* Confidence & Quality */}
             <div className="grid grid-cols-2 gap-4">
@@ -161,6 +233,27 @@ const AIAnalysis = () => {
             </div>
           </div>
         )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Analysis Error</h3>
+                <p className="text-sm text-muted-foreground mb-3">{error}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={analyzeImage}
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom CTA */}
@@ -170,7 +263,7 @@ const AIAnalysis = () => {
           size="xl"
           className="w-full"
           onClick={handleContinue}
-          disabled={!analysisComplete}
+          disabled={!analysisComplete || isAnalyzing}
         >
           Continue to Listing
           <ArrowRight className="w-5 h-5" />

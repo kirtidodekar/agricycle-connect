@@ -38,7 +38,7 @@ const CreateListing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-foreground flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -50,16 +50,16 @@ const CreateListing = () => {
       />
 
       {/* Header */}
-      <header className="bg-foreground/95 backdrop-blur-md px-4 py-4 flex items-center justify-between z-10">
+      <header className="bg-card border-b border-border px-4 py-4 flex items-center justify-between z-10">
         <button
           onClick={() => navigate(-1)}
-          className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center"
+          className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center"
         >
-          <ArrowLeft className="w-5 h-5 text-background" />
+          <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
-        <h1 className="text-lg font-semibold text-background">Create Listing</h1>
-        <button className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center">
-          <HelpCircle className="w-5 h-5 text-background" />
+        <h1 className="text-lg font-semibold text-foreground">Create Listing</h1>
+        <button className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+          <HelpCircle className="w-5 h-5 text-foreground" />
         </button>
       </header>
 
@@ -67,33 +67,33 @@ const CreateListing = () => {
       <main className="flex-1 flex flex-col">
         {selectedImage ? (
           /* Image Preview */
-          <div className="flex-1 relative">
+          <div className="flex-1 relative bg-muted">
             <img
               src={selectedImage}
               alt="Selected waste"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
             <button
               onClick={() => {
                 setSelectedImage(null);
                 setIsCapturing(true);
               }}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-foreground/80 flex items-center justify-center"
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center shadow-lg"
             >
-              <X className="w-5 h-5 text-background" />
+              <X className="w-5 h-5 text-foreground" />
             </button>
           </div>
         ) : (
           /* Camera View */
-          <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-b from-foreground to-foreground/90 p-6">
-            <div className="w-full max-w-sm aspect-[4/5] rounded-3xl border-2 border-dashed border-background/30 flex flex-col items-center justify-center p-8">
-              <div className="w-20 h-20 rounded-2xl bg-background/10 flex items-center justify-center mb-6">
-                <Camera className="w-10 h-10 text-background/70" />
+          <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-b from-background to-muted p-6">
+            <div className="w-full max-w-sm aspect-[4/5] rounded-3xl border-2 border-dashed border-border flex flex-col items-center justify-center p-8 bg-card">
+              <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mb-6">
+                <Camera className="w-10 h-10 text-muted-foreground" />
               </div>
-              <h2 className="text-xl font-semibold text-background text-center mb-2">
+              <h2 className="text-xl font-semibold text-foreground text-center mb-2">
                 Capture Your Waste
               </h2>
-              <p className="text-background/60 text-center text-sm mb-6">
+              <p className="text-muted-foreground text-center text-sm mb-6">
                 Take a clear photo of your agricultural waste
               </p>
 
@@ -102,7 +102,7 @@ const CreateListing = () => {
                 {tips.map((tip, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-2 text-sm text-background/60"
+                    className="flex items-center gap-2 text-sm text-muted-foreground"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                     {tip}
@@ -114,21 +114,21 @@ const CreateListing = () => {
         )}
 
         {/* Bottom Actions */}
-        <div className="bg-foreground p-6 space-y-4 safe-bottom">
+        <div className="bg-background border-t border-border p-6 space-y-4 safe-bottom">
           {selectedImage ? (
-            <Button variant="hero" size="xl" onClick={handleAnalyze} className="w-full">
+            <Button variant="farmer" size="xl" onClick={handleAnalyze} className="w-full">
               <ImageIcon className="w-5 h-5" />
               Analyze with AI
             </Button>
           ) : (
             <>
-              <Button variant="hero" size="xl" onClick={handleCapture} className="w-full">
+              <Button variant="farmer" size="xl" onClick={handleCapture} className="w-full">
                 <Camera className="w-5 h-5" />
                 Take Photo
               </Button>
               <Button
-                variant="ghost"
-                className="w-full text-background/70 hover:text-background hover:bg-background/10"
+                variant="outline"
+                className="w-full"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="w-5 h-5" />

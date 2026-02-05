@@ -4,19 +4,31 @@ import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
 import Logo from "@/components/Logo";
 import FarmerBottomNav from "@/components/FarmerBottomNav";
+import { useListings } from "@/context/ListingsContext";
 
 const FarmerDashboard = () => {
+  const { farmerListings } = useListings();
+  
+  const activeListings = farmerListings.filter(l => l.status === "active").length;
+  const totalInquiries = farmerListings.reduce((sum, l) => sum + (l.inquiries || 0), 0);
+  
   const stats = [
-    { value: "3", label: "Active Listings", icon: <Package className="w-5 h-5 text-primary" />, variant: "primary" as const },
-    { value: "5", label: "Buyer Inquiries", icon: <MessageSquare className="w-5 h-5 text-secondary" />, variant: "secondary" as const },
+    { value: activeListings.toString(), label: "Active Listings", icon: <Package className="w-5 h-5 text-primary" />, variant: "primary" as const },
+    { value: totalInquiries.toString(), label: "Buyer Inquiries", icon: <MessageSquare className="w-5 h-5 text-secondary" />, variant: "secondary" as const },
     { value: "₹12,500", label: "Estimated Earnings", icon: <TrendingUp className="w-5 h-5 text-accent" />, variant: "accent" as const },
   ];
 
-  const recentListings = [
-    { id: 1, name: "Rice Husk", quantity: "500 kg", status: "active", inquiries: 2, price: "₹5/kg" },
-    { id: 2, name: "Wheat Straw", quantity: "1 ton", status: "active", inquiries: 3, price: "₹3/kg" },
-    { id: 3, name: "Sugarcane Bagasse", quantity: "2 tons", status: "contacted", inquiries: 5, price: "₹4/kg" },
-  ];
+  const recentListings = farmerListings
+    .filter(l => l.status === "active")
+    .slice(0, 3)
+    .map(l => ({
+      id: l.id,
+      name: l.title,
+      quantity: `${l.quantity} ${l.unit}`,
+      status: l.status,
+      inquiries: l.inquiries || 0,
+      price: `₹${l.price}/${l.unit}`
+    }));
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -94,9 +106,10 @@ const FarmerDashboard = () => {
 
           <div className="space-y-3">
             {recentListings.map((listing) => (
-              <div
+              <Link
                 key={listing.id}
-                className="bg-card rounded-xl p-4 shadow-card flex items-center gap-4"
+                to={`/farmer/listing/${listing.id}`}
+                className="block bg-card rounded-xl p-4 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all hover:-translate-y-0.5"
               >
                 <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center">
                   <Package className="w-6 h-6 text-muted-foreground" />
@@ -116,7 +129,7 @@ const FarmerDashboard = () => {
                     {listing.inquiries} inquiries
                   </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
