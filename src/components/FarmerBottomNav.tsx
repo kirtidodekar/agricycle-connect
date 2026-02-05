@@ -24,9 +24,9 @@ const FarmerBottomNav = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className="flex items-center justify-center -mt-6"
+                className="flex items-center justify-center -mt-6 tap-scale"
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-gold flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-14 h-14 rounded-full bg-gradient-gold flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 btn-2026">
                   <Camera className="w-6 h-6 text-accent-foreground" />
                 </div>
               </Link>

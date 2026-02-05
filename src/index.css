@@ -392,3 +392,9 @@
     padding-top: max(1rem, env(safe-area-inset-top));
   }
 }
+
+/* Reset body styling to original */
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #f8fafc;
+}
