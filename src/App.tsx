@@ -19,6 +19,11 @@ import ListingDetails from "./pages/ListingDetails";
 import FarmerListings from "./pages/FarmerListings";
 import FarmerMessages from "./pages/FarmerMessages";
 import FarmerProfile from "./pages/FarmerProfile";
+import FarmerSettings from "./pages/FarmerSettings";
+import FarmerPrivacy from "./pages/FarmerPrivacy";
+import FarmerSecurity from "./pages/FarmerSecurity";
+import FarmerHelp from "./pages/FarmerHelp";
+import FarmerContact from "./pages/FarmerContact";
 
 // Buyer Pages
 import BuyerOnboarding from "./pages/BuyerOnboarding";
@@ -28,6 +33,11 @@ import BuyerListings from "./pages/BuyerListings";
 import BuyerShortlist from "./pages/BuyerShortlist";
 import BuyerMessages from "./pages/BuyerMessages";
 import BuyerProfile from "./pages/BuyerProfile";
+import BuyerSettings from "./pages/BuyerSettings";
+import BuyerPrivacy from "./pages/BuyerPrivacy";
+import BuyerSecurity from "./pages/BuyerSecurity";
+import BuyerHelp from "./pages/BuyerHelp";
+import BuyerContact from "./pages/BuyerContact";
 
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +67,11 @@ const App = () => (
             <Route path="/farmer/messages" element={<FarmerMessages />} />
             <Route path="/farmer/messages/:id" element={<FarmerMessages />} />
             <Route path="/farmer/profile" element={<FarmerProfile />} />
+            <Route path="/farmer/settings" element={<FarmerSettings />} />
+            <Route path="/farmer/privacy" element={<FarmerPrivacy />} />
+            <Route path="/farmer/security" element={<FarmerSecurity />} />
+            <Route path="/farmer/help" element={<FarmerHelp />} />
+            <Route path="/farmer/contact" element={<FarmerContact />} />
 
             {/* Buyer Routes */}
             <Route path="/buyer/onboarding" element={<BuyerOnboarding />} />
@@ -67,6 +82,11 @@ const App = () => (
             <Route path="/buyer/messages" element={<BuyerMessages />} />
             <Route path="/buyer/messages/:id" element={<BuyerMessages />} />
             <Route path="/buyer/profile" element={<BuyerProfile />} />
+            <Route path="/buyer/settings" element={<BuyerSettings />} />
+            <Route path="/buyer/privacy" element={<BuyerPrivacy />} />
+            <Route path="/buyer/security" element={<BuyerSecurity />} />
+            <Route path="/buyer/help" element={<BuyerHelp />} />
+            <Route path="/buyer/contact" element={<BuyerContact />} />
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
