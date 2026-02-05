@@ -2,7 +2,7 @@
 
 Backend API for Agricycle Connect with Grok AI image analysis integration.
 
-## Setup Instructions
+## 🚀 Quick Start
 
 1. **Install Dependencies**
    ```bash
@@ -11,9 +11,11 @@ Backend API for Agricycle Connect with Grok AI image analysis integration.
    ```
 
 2. **Configure Environment Variables**
-   - Rename `.env.example` to `.env`
-   - Add your Grok API key:
-   ```
+   ```bash
+   # Copy the example file
+   cp .env.example .env
+   
+   # Edit .env and add your Grok API key
    GROK_API_KEY=your_actual_grok_api_key_here
    ```
 
@@ -25,6 +27,17 @@ Backend API for Agricycle Connect with Grok AI image analysis integration.
    # Production mode
    npm start
    ```
+
+## 📁 Project Structure
+
+```
+backend/
+├── routes/          # API route handlers
+├── server.js        # Main Express server
+├── .env.example     # Environment variable template
+├── .gitignore       # Git ignore rules
+└── package.json     # Dependencies and scripts
+```
 
 ## API Endpoints
 
