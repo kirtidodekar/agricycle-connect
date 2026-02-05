@@ -94,9 +94,10 @@ const FarmerDashboard = () => {
 
           <div className="space-y-3">
             {recentListings.map((listing) => (
-              <div
+              <Link
                 key={listing.id}
-                className="bg-card rounded-xl p-4 shadow-card flex items-center gap-4"
+                to={`/farmer/listing/${listing.id}`}
+                className="block bg-card rounded-xl p-4 shadow-card flex items-center gap-4 hover:shadow-elevated transition-all hover:-translate-y-0.5"
               >
                 <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center">
                   <Package className="w-6 h-6 text-muted-foreground" />
@@ -116,7 +117,7 @@ const FarmerDashboard = () => {
                     {listing.inquiries} inquiries
                   </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
