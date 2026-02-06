@@ -1,7 +1,10 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { collection, addDoc, updateDoc, doc, getDocs, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '@/services/firebase/config';
+import { useAuth } from '@/context/AuthContext';
 
 interface Listing {
-  id: number;
+  id: string; // Changed from number to string for Firebase compatibility
   title: string;
   quantity: string;
   unit: string;
@@ -12,6 +15,7 @@ interface Listing {
   confidence?: number;
   location: string;
   farmerName: string;
+  farmerId: string; // Added farmer ID for proper ownership
   date: string;
   status: "active" | "sold" | "draft";
   image?: string;
@@ -22,180 +26,111 @@ interface Listing {
 interface ListingsContextType {
   farmerListings: Listing[];
   buyerListings: Listing[];
-  addListing: (listing: Omit<Listing, "id" | "date" | "status" | "inquiries">) => void;
-  updateListing: (id: number, updates: Partial<Listing>) => void;
-  toggleBookmark: (id: number) => void;
-  getListingsByFarmer: (farmerName: string) => Listing[];
+  addListing: (listing: Omit<Listing, "id" | "date" | "status" | "inquiries" | "farmerId" | "farmerName">) => Promise<void>;
+  updateListing: (id: string, updates: Partial<Listing>) => Promise<void>;
+  toggleBookmark: (id: string) => void;
+  getListingsByFarmer: (farmerId: string) => Listing[];
 }
 
 const ListingsContext = createContext<ListingsContextType | undefined>(undefined);
 
-const sampleFarmerListings: Listing[] = [
-  {
-    id: 1,
-    title: "Rice Husk",
-    quantity: "500",
-    unit: "kg",
-    price: "5",
-    description: "Fresh rice husk from recent harvest",
-    availability: "immediate",
-    quality: "Good",
-    location: "Pune, Maharashtra",
-    farmerName: "Rajesh Kumar",
-    date: "2024-01-15",
-    status: "active",
-    inquiries: 2,
-  },
-  {
-    id: 2,
-    title: "Wheat Straw",
-    quantity: "1",
-    unit: "ton",
-    price: "3",
-    description: "High-quality wheat straw, properly dried",
-    availability: "immediate",
-    quality: "Excellent",
-    location: "Pune, Maharashtra",
-    farmerName: "Rajesh Kumar",
-    date: "2024-01-14",
-    status: "active",
-    inquiries: 3,
-  },
-  {
-    id: 3,
-    title: "Sugarcane Bagasse",
-    quantity: "2",
-    unit: "tons",
-    price: "4",
-    description: "Fresh bagasse from sugar mill",
-    availability: "weekly",
-    quality: "Good",
-    location: "Pune, Maharashtra",
-    farmerName: "Rajesh Kumar",
-    date: "2024-01-10",
-    status: "sold",
-    inquiries: 5,
-  },
-];
-
-const sampleBuyerListings: Listing[] = [
-  {
-    id: 1,
-    title: "Rice Husk",
-    quantity: "500",
-    unit: "kg",
-    price: "5",
-    description: "Fresh rice husk from recent harvest",
-    availability: "immediate",
-    quality: "Good",
-    confidence: 94,
-    location: "Pune, Maharashtra",
-    farmerName: "Rajesh Kumar",
-    date: "2024-01-15",
-    status: "active",
-    isBookmarked: false,
-  },
-  {
-    id: 2,
-    title: "Wheat Straw",
-    quantity: "1",
-    unit: "ton",
-    price: "3",
-    description: "High-quality wheat straw, properly dried",
-    availability: "immediate",
-    quality: "Excellent",
-    confidence: 98,
-    location: "Nashik, Maharashtra",
-    farmerName: "Amit Patil",
-    date: "2024-01-14",
-    status: "active",
-    isBookmarked: true,
-  },
-  {
-    id: 3,
-    title: "Sugarcane Bagasse",
-    quantity: "2",
-    unit: "tons",
-    price: "4",
-    description: "Fresh bagasse from sugar mill",
-    availability: "weekly",
-    quality: "Good",
-    confidence: 91,
-    location: "Kolhapur, Maharashtra",
-    farmerName: "Suresh Jadhav",
-    date: "2024-01-13",
-    status: "active",
-    isBookmarked: false,
-  },
-  {
-    id: 4,
-    title: "Cotton Stalks",
-    quantity: "800",
-    unit: "kg",
-    price: "2",
-    description: "Clean cotton stalks from recent harvest",
-    availability: "immediate",
-    quality: "Average",
-    confidence: 85,
-    location: "Nagpur, Maharashtra",
-    farmerName: "Ramesh Deshmukh",
-    date: "2024-01-12",
-    status: "active",
-    isBookmarked: false,
-  },
-];
-
 export const ListingsProvider = ({ children }: { children: ReactNode }) => {
-  const [farmerListings, setFarmerListings] = useState<Listing[]>(sampleFarmerListings);
-  const [buyerListings, setBuyerListings] = useState<Listing[]>(sampleBuyerListings);
+  const { currentUser } = useAuth();
+  const [farmerListings, setFarmerListings] = useState<Listing[]>([]);
+  const [buyerListings, setBuyerListings] = useState<Listing[]>([]);
 
-  const addListing = (listing: Omit<Listing, "id" | "date" | "status" | "inquiries">) => {
-    const newId = Math.max(...farmerListings.map(l => l.id), ...buyerListings.map(l => l.id)) + 1;
-    const newDate = new Date().toISOString().split('T')[0];
-    
-    const newListing: Listing = {
+  // Load listings based on user role
+  useEffect(() => {
+    if (!currentUser) return;
+
+    let unsubscribe: () => void;
+
+    if (currentUser.role === 'farmer') {
+      // Subscribe to farmer's own listings
+      const q = query(
+        collection(db, 'listings'),
+        where('farmerId', '==', currentUser.uid),
+        orderBy('date', 'desc')
+      );
+
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const listings = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Listing[];
+        setFarmerListings(listings);
+      });
+    } else if (currentUser.role === 'buyer') {
+      // Buyers see all active listings
+      const q = query(
+        collection(db, 'listings'),
+        where('status', '==', 'active'),
+        orderBy('date', 'desc')
+      );
+
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const listings = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Listing[];
+        setBuyerListings(listings);
+      });
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [currentUser]);
+
+  const addListing = async (listing: Omit<Listing, "id" | "date" | "status" | "inquiries" | "farmerId" | "farmerName">) => {
+    if (!currentUser) {
+      throw new Error('User must be logged in to add a listing');
+    }
+
+    const newListing = {
       ...listing,
-      id: newId,
-      date: newDate,
-      status: "active",
+      farmerId: currentUser.uid,
+      farmerName: currentUser.displayName || currentUser.email || 'Anonymous',
+      date: new Date().toISOString().split('T')[0],
+      status: "active" as const,
       inquiries: 0,
     };
 
-    // Add to farmer listings
-    setFarmerListings(prev => [...prev, newListing]);
-    
-    // Add to buyer listings (public view)
-    setBuyerListings(prev => [...prev, { ...newListing, isBookmarked: false }]);
+    try {
+      const docRef = await addDoc(collection(db, 'listings'), newListing);
+      // The onSnapshot will automatically update the state
+      console.log('Listing added with ID:', docRef.id);
+    } catch (error) {
+      console.error('Error adding listing:', error);
+      throw error;
+    }
   };
 
-  const updateListing = (id: number, updates: Partial<Listing>) => {
-    // Update farmer listings
-    setFarmerListings(prev => 
-      prev.map(listing => 
-        listing.id === id ? { ...listing, ...updates } : listing
-      )
-    );
-    
-    // Update buyer listings
-    setBuyerListings(prev => 
-      prev.map(listing => 
-        listing.id === id ? { ...listing, ...updates } : listing
-      )
-    );
+  const updateListing = async (id: string, updates: Partial<Listing>) => {
+    try {
+      const listingRef = doc(db, 'listings', id);
+      await updateDoc(listingRef, updates);
+      // The onSnapshot will automatically update the state
+    } catch (error) {
+      console.error('Error updating listing:', error);
+      throw error;
+    }
   };
 
-  const toggleBookmark = (id: number) => {
-    setBuyerListings(prev => 
-      prev.map(listing => 
-        listing.id === id 
-          ? { ...listing, isBookmarked: !listing.isBookmarked } 
+  const toggleBookmark = (id: string) => {
+    // For now, just update local state
+    // In a full implementation, this would update Firestore
+    setBuyerListings(prev =>
+      prev.map(listing =>
+        listing.id === id
+          ? { ...listing, isBookmarked: !listing.isBookmarked }
           : listing
       )
     );
   };
 
-  const getListingsByFarmer = (farmerName: string) => {
-    return farmerListings.filter(listing => listing.farmerName === farmerName);
+  const getListingsByFarmer = (farmerId: string) => {
+    return farmerListings.filter(listing => listing.farmerId === farmerId);
   };
 
   return (

@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ListingsProvider } from "@/context/ListingsContext";
+import { AuthProvider } from "@/context/AuthContext";
+import RouteGuard from "@/components/RouteGuard";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -45,55 +47,57 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ListingsProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/role-select" element={<RoleSelect />} />
-            <Route path="/auth" element={<Auth />} />
+    <AuthProvider>
+      <ListingsProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/role-select" element={<RoleSelect />} />
+              <Route path="/auth" element={<Auth />} />
 
-            {/* Farmer Routes */}
-            <Route path="/farmer/onboarding" element={<FarmerOnboarding />} />
-            <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
-            <Route path="/farmer/create" element={<CreateListing />} />
-            <Route path="/farmer/analyze" element={<AIAnalysis />} />
-            <Route path="/farmer/listing-details" element={<ListingDetails />} />
-            <Route path="/farmer/listing/:id" element={<ListingDetails />} />
-            <Route path="/farmer/listings" element={<FarmerListings />} />
-            <Route path="/farmer/messages" element={<FarmerMessages />} />
-            <Route path="/farmer/messages/:id" element={<FarmerMessages />} />
-            <Route path="/farmer/profile" element={<FarmerProfile />} />
-            <Route path="/farmer/settings" element={<FarmerSettings />} />
-            <Route path="/farmer/privacy" element={<FarmerPrivacy />} />
-            <Route path="/farmer/security" element={<FarmerSecurity />} />
-            <Route path="/farmer/help" element={<FarmerHelp />} />
-            <Route path="/farmer/contact" element={<FarmerContact />} />
+              {/* Farmer Routes */}
+              <Route path="/farmer/onboarding" element={<RouteGuard requiredRole="farmer"><FarmerOnboarding /></RouteGuard>} />
+              <Route path="/farmer/dashboard" element={<RouteGuard requiredRole="farmer"><FarmerDashboard /></RouteGuard>} />
+              <Route path="/farmer/create" element={<RouteGuard requiredRole="farmer"><CreateListing /></RouteGuard>} />
+              <Route path="/farmer/analyze" element={<RouteGuard requiredRole="farmer"><AIAnalysis /></RouteGuard>} />
+              <Route path="/farmer/listing-details" element={<RouteGuard requiredRole="farmer"><ListingDetails /></RouteGuard>} />
+              <Route path="/farmer/listing/:id" element={<RouteGuard requiredRole="farmer"><ListingDetails /></RouteGuard>} />
+              <Route path="/farmer/listings" element={<RouteGuard requiredRole="farmer"><FarmerListings /></RouteGuard>} />
+              <Route path="/farmer/messages" element={<RouteGuard requiredRole="farmer"><FarmerMessages /></RouteGuard>} />
+              <Route path="/farmer/messages/:id" element={<RouteGuard requiredRole="farmer"><FarmerMessages /></RouteGuard>} />
+              <Route path="/farmer/profile" element={<RouteGuard requiredRole="farmer"><FarmerProfile /></RouteGuard>} />
+              <Route path="/farmer/settings" element={<RouteGuard requiredRole="farmer"><FarmerSettings /></RouteGuard>} />
+              <Route path="/farmer/privacy" element={<RouteGuard requiredRole="farmer"><FarmerPrivacy /></RouteGuard>} />
+              <Route path="/farmer/security" element={<RouteGuard requiredRole="farmer"><FarmerSecurity /></RouteGuard>} />
+              <Route path="/farmer/help" element={<RouteGuard requiredRole="farmer"><FarmerHelp /></RouteGuard>} />
+              <Route path="/farmer/contact" element={<RouteGuard requiredRole="farmer"><FarmerContact /></RouteGuard>} />
 
-            {/* Buyer Routes */}
-            <Route path="/buyer/onboarding" element={<BuyerOnboarding />} />
-            <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
-            <Route path="/buyer/listings" element={<BuyerListings />} />
-            <Route path="/buyer/listing/:id" element={<BuyerListingDetail />} />
-            <Route path="/buyer/shortlist" element={<BuyerShortlist />} />
-            <Route path="/buyer/messages" element={<BuyerMessages />} />
-            <Route path="/buyer/messages/:id" element={<BuyerMessages />} />
-            <Route path="/buyer/profile" element={<BuyerProfile />} />
-            <Route path="/buyer/settings" element={<BuyerSettings />} />
-            <Route path="/buyer/privacy" element={<BuyerPrivacy />} />
-            <Route path="/buyer/security" element={<BuyerSecurity />} />
-            <Route path="/buyer/help" element={<BuyerHelp />} />
-            <Route path="/buyer/contact" element={<BuyerContact />} />
+              {/* Buyer Routes */}
+              <Route path="/buyer/onboarding" element={<RouteGuard requiredRole="buyer"><BuyerOnboarding /></RouteGuard>} />
+              <Route path="/buyer/dashboard" element={<RouteGuard requiredRole="buyer"><BuyerDashboard /></RouteGuard>} />
+              <Route path="/buyer/listings" element={<RouteGuard requiredRole="buyer"><BuyerListings /></RouteGuard>} />
+              <Route path="/buyer/listing/:id" element={<RouteGuard requiredRole="buyer"><BuyerListingDetail /></RouteGuard>} />
+              <Route path="/buyer/shortlist" element={<RouteGuard requiredRole="buyer"><BuyerShortlist /></RouteGuard>} />
+              <Route path="/buyer/messages" element={<RouteGuard requiredRole="buyer"><BuyerMessages /></RouteGuard>} />
+              <Route path="/buyer/messages/:id" element={<RouteGuard requiredRole="buyer"><BuyerMessages /></RouteGuard>} />
+              <Route path="/buyer/profile" element={<RouteGuard requiredRole="buyer"><BuyerProfile /></RouteGuard>} />
+              <Route path="/buyer/settings" element={<RouteGuard requiredRole="buyer"><BuyerSettings /></RouteGuard>} />
+              <Route path="/buyer/privacy" element={<RouteGuard requiredRole="buyer"><BuyerPrivacy /></RouteGuard>} />
+              <Route path="/buyer/security" element={<RouteGuard requiredRole="buyer"><BuyerSecurity /></RouteGuard>} />
+              <Route path="/buyer/help" element={<RouteGuard requiredRole="buyer"><BuyerHelp /></RouteGuard>} />
+              <Route path="/buyer/contact" element={<RouteGuard requiredRole="buyer"><BuyerContact /></RouteGuard>} />
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ListingsProvider>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ListingsProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

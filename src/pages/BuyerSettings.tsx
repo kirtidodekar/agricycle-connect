@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 interface NotificationsState {
   listingUpdates: boolean;
@@ -32,7 +33,8 @@ interface ErrorsState {
 
 const BuyerSettings = () => {
   const navigate = useNavigate();
-  
+  const { currentUser, signOut } = useAuth();
+
   const [notifications, setNotifications] = useState<NotificationsState>({
     listingUpdates: true,
     inquiryResponses: true,
@@ -41,61 +43,71 @@ const BuyerSettings = () => {
   });
 
   const [profileData, setProfileData] = useState<ProfileDataState>({
-    name: "GreenEnergy Solutions",
+    name: currentUser?.displayName || "",
     phone: "+91 98765 43210",
-    email: "contact@greenenergy.com",
+    email: currentUser?.email || "",
     location: "Pune, Maharashtra",
     businessType: "Biomass Energy Company",
     industry: "Renewable Energy"
   });
+
+  useEffect(() => {
+    if (currentUser) {
+      setProfileData(prev => ({
+        ...prev,
+        name: currentUser.displayName || prev.name,
+        email: currentUser.email || prev.email
+      }));
+    }
+  }, [currentUser]);
 
   const [saving, setSaving] = useState<boolean>(false);
   const [errors, setErrors] = useState<ErrorsState>({});
 
   const validateForm = (): boolean => {
     const newErrors: ErrorsState = {};
-    
+
     if (!profileData.name.trim()) {
       newErrors.name = "Business name is required";
     }
-    
+
     if (!profileData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileData.email)) {
       newErrors.email = "Invalid email format";
     }
-    
+
     if (!profileData.phone.trim()) {
       newErrors.phone = "Phone number is required";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSaveProfile = async () => {
     if (!validateForm()) return;
-    
+
     setSaving(true);
-    
+
     try {
       // Simulate API call to save profile
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // In a real application, you would call an API here
       // const response = await fetch('/api/user/profile', {
       //   method: 'PUT',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify(profileData)
       // });
-      
+
       // if (response.ok) {
-        toast({
-          title: "Success!",
-          description: "Your profile has been updated successfully.",
-        });
-        // You might want to update the user context here
-        // setUserContext(prev => ({...prev, ...profileData}));
+      toast({
+        title: "Success!",
+        description: "Your profile has been updated successfully.",
+      });
+      // You might want to update the user context here
+      // setUserContext(prev => ({...prev, ...profileData}));
       // } else {
       //   throw new Error('Failed to update profile');
       // }
@@ -114,6 +126,14 @@ const BuyerSettings = () => {
       ...prev,
       [field]: !prev[field]
     }));
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (
@@ -135,7 +155,7 @@ const BuyerSettings = () => {
         {/* Account Settings */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Account Settings</h2>
-          
+
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
@@ -144,7 +164,7 @@ const BuyerSettings = () => {
               <div className="flex-1">
                 <Input
                   value={profileData.name}
-                  onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                   placeholder="Business Name"
                   className={`${errors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                 />
@@ -156,29 +176,29 @@ const BuyerSettings = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-muted-foreground" />
               </div>
               <Input
                 value={profileData.businessType}
-                onChange={(e) => setProfileData({...profileData, businessType: e.target.value})}
+                onChange={(e) => setProfileData({ ...profileData, businessType: e.target.value })}
                 placeholder="Business Type"
               />
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <Globe className="w-5 h-5 text-muted-foreground" />
               </div>
               <Input
                 value={profileData.industry}
-                onChange={(e) => setProfileData({...profileData, industry: e.target.value})}
+                onChange={(e) => setProfileData({ ...profileData, industry: e.target.value })}
                 placeholder="Industry"
               />
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <Mail className="w-5 h-5 text-muted-foreground" />
@@ -187,7 +207,7 @@ const BuyerSettings = () => {
                 <Input
                   type="email"
                   value={profileData.email}
-                  onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                   placeholder="Email Address"
                   className={`${errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                 />
@@ -199,7 +219,7 @@ const BuyerSettings = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <Phone className="w-5 h-5 text-muted-foreground" />
@@ -208,7 +228,7 @@ const BuyerSettings = () => {
                 <Input
                   type="tel"
                   value={profileData.phone}
-                  onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                   placeholder="Phone Number"
                   className={`${errors.phone ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                 />
@@ -220,20 +240,20 @@ const BuyerSettings = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-muted-foreground" />
               </div>
               <Input
                 value={profileData.location}
-                onChange={(e) => setProfileData({...profileData, location: e.target.value})}
+                onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
                 placeholder="Location"
               />
             </div>
           </div>
-          
-          <Button 
+
+          <Button
             onClick={handleSaveProfile}
             className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground"
           >
@@ -244,7 +264,7 @@ const BuyerSettings = () => {
         {/* Notification Settings */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Notifications</h2>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -259,7 +279,7 @@ const BuyerSettings = () => {
                 onCheckedChange={() => handleNotificationChange('listingUpdates')}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Bell className="w-5 h-5 text-muted-foreground" />
@@ -273,7 +293,7 @@ const BuyerSettings = () => {
                 onCheckedChange={() => handleNotificationChange('inquiryResponses')}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <CreditCard className="w-5 h-5 text-muted-foreground" />
@@ -287,7 +307,7 @@ const BuyerSettings = () => {
                 onCheckedChange={() => handleNotificationChange('priceAlerts')}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <CreditCard className="w-5 h-5 text-muted-foreground" />
@@ -307,7 +327,7 @@ const BuyerSettings = () => {
         {/* Language & Region */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Language & Region</h2>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Languages className="w-5 h-5 text-muted-foreground" />
@@ -323,7 +343,7 @@ const BuyerSettings = () => {
         {/* Privacy & Security */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Privacy & Security</h2>
-          
+
           <div className="space-y-3">
             <Link to="/buyer/privacy" className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-xl transition-colors">
               <div className="flex items-center gap-3">
@@ -332,7 +352,7 @@ const BuyerSettings = () => {
               </div>
               <span className="text-sm text-muted-foreground">View</span>
             </Link>
-            
+
             <Link to="/buyer/security" className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-xl transition-colors">
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-muted-foreground" />
@@ -346,7 +366,7 @@ const BuyerSettings = () => {
         {/* Help & Support */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Help & Support</h2>
-          
+
           <div className="space-y-3">
             <Link to="/buyer/help" className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-xl transition-colors">
               <div className="flex items-center gap-3">
@@ -355,7 +375,7 @@ const BuyerSettings = () => {
               </div>
               <span className="text-sm text-muted-foreground">Get help</span>
             </Link>
-            
+
             <Link to="/buyer/contact" className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-xl transition-colors">
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-muted-foreground" />
@@ -366,9 +386,11 @@ const BuyerSettings = () => {
           </div>
         </div>
 
-        {/* Logout */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
-          <button className="w-full flex items-center justify-between p-3 text-red-600 hover:bg-red-50/50 rounded-xl transition-colors">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-between p-3 text-red-600 hover:bg-red-50/50 rounded-xl transition-colors"
+          >
             <div className="flex items-center gap-3">
               <LogOut className="w-5 h-5" />
               <span className="font-medium">Logout</span>

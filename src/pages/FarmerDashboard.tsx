@@ -5,13 +5,18 @@ import StatCard from "@/components/StatCard";
 import Logo from "@/components/Logo";
 import FarmerBottomNav from "@/components/FarmerBottomNav";
 import { useListings } from "@/context/ListingsContext";
+import { useAuth } from "@/context/AuthContext";
 
 const FarmerDashboard = () => {
   const { farmerListings } = useListings();
-  
+  const { currentUser } = useAuth();
+
+  const displayName = currentUser?.displayName || "Farmer";
+  const initials = displayName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+
   const activeListings = farmerListings.filter(l => l.status === "active").length;
   const totalInquiries = farmerListings.reduce((sum, l) => sum + (l.inquiries || 0), 0);
-  
+
   const stats = [
     { value: activeListings.toString(), label: "Active Listings", icon: <Package className="w-5 h-5" />, variant: "primary" as const },
     { value: totalInquiries.toString(), label: "Buyer Inquiries", icon: <MessageSquare className="w-5 h-5" />, variant: "secondary" as const },
@@ -41,7 +46,7 @@ const FarmerDashboard = () => {
             </div>
             <div>
               <p className="text-emerald-100 text-sm">Welcome back,</p>
-              <h1 className="text-xl font-bold text-white">Rajesh Kumar</h1>
+              <h1 className="text-xl font-bold text-white">{displayName}</h1>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -49,7 +54,7 @@ const FarmerDashboard = () => {
               <Bell className="w-5 h-5 text-white" />
             </button>
             <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
-              <span className="text-white font-bold">RK</span>
+              <span className="text-white font-bold">{initials}</span>
             </div>
           </div>
         </div>

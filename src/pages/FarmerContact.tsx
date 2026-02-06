@@ -5,14 +5,28 @@ import { Button } from "@/components/ui/button";
 import FarmerBottomNav from "@/components/FarmerBottomNav";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
 
 const FarmerContact = () => {
+  const { currentUser } = useAuth();
+
   const [formData, setFormData] = useState({
-    name: "Rajesh Kumar",
-    email: "rajesh.kumar@email.com",
+    name: currentUser?.displayName || "",
+    email: currentUser?.email || "",
     subject: "",
     message: ""
   });
+
+  useEffect(() => {
+    if (currentUser) {
+      setFormData(prev => ({
+        ...prev,
+        name: currentUser.displayName || prev.name,
+        email: currentUser.email || prev.email
+      }));
+    }
+  }, [currentUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -54,7 +68,7 @@ const FarmerContact = () => {
         {/* Contact Information */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Contact Information</h2>
-          
+
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
@@ -65,7 +79,7 @@ const FarmerContact = () => {
                 <p className="text-sm text-muted-foreground">support@agricycleconnect.com</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <Phone className="w-5 h-5 text-muted-foreground" />
@@ -75,7 +89,7 @@ const FarmerContact = () => {
                 <p className="text-sm text-muted-foreground">+91 98765 43210</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-muted-foreground" />
@@ -91,7 +105,7 @@ const FarmerContact = () => {
         {/* Business Hours */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Business Hours</h2>
-          
+
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-foreground">Monday - Friday</span>
@@ -111,7 +125,7 @@ const FarmerContact = () => {
         {/* Contact Form */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Send us a message</h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
@@ -126,7 +140,7 @@ const FarmerContact = () => {
                 readOnly
               />
             </div>
-            
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                 Email
@@ -141,7 +155,7 @@ const FarmerContact = () => {
                 readOnly
               />
             </div>
-            
+
             <div>
               <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-1">
                 Subject
@@ -154,7 +168,7 @@ const FarmerContact = () => {
                 placeholder="Subject of your message"
               />
             </div>
-            
+
             <div>
               <label htmlFor="message" className="block text-sm font-medium text-foreground mb-1">
                 Message
@@ -168,7 +182,7 @@ const FarmerContact = () => {
                 rows={4}
               />
             </div>
-            
+
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
               <Send className="w-4 h-4 mr-2" />
               Send Message
@@ -179,7 +193,7 @@ const FarmerContact = () => {
         {/* Emergency Support */}
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Emergency Support</h2>
-          
+
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <MessageSquare className="w-5 h-5 text-muted-foreground mt-0.5" />
@@ -188,7 +202,7 @@ const FarmerContact = () => {
                 <p className="text-sm text-muted-foreground">If you have an urgent issue that needs immediate attention, please call our emergency support line.</p>
               </div>
             </div>
-            
+
             <Button variant="outline" className="w-full">
               Call Emergency Support
             </Button>

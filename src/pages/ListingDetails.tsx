@@ -38,7 +38,7 @@ const ListingDetails = () => {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     
     // Save listing to context
-    addListing({
+    await addListing({
       title: formData.title,
       quantity: formData.quantity,
       unit: formData.unit,
@@ -47,7 +47,6 @@ const ListingDetails = () => {
       availability: formData.availability,
       quality: analysis.quality,
       location: "Pune, Maharashtra",
-      farmerName: "Rajesh Kumar",
     });
 
     toast({
