@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Sparkles, Check, Loader2, Leaf, TrendingUp, Factory, ArrowRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { analyzeWasteImage } from "@/services/ai";
 
 const AIAnalysis = () => {
   const navigate = useNavigate();
@@ -24,58 +25,57 @@ const AIAnalysis = () => {
   });
 
   useEffect(() => {
-    analyzeImage();
+    analyzeImageFunc();
   }, []);
 
-  const analyzeImage = async () => {
+  const analyzeImageFunc = async () => {
     try {
       setIsAnalyzing(true);
       setError(null);
-      
-      // Convert data URL to blob
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      
-      // Create FormData
-      const formData = new FormData();
-      formData.append('image', blob, 'waste-image.jpg');
-      
-      // Send to backend API
-      const apiResponse = await fetch('http://localhost:5000/api/ai/analyze-image', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!apiResponse.ok) {
-        const errorData = await apiResponse.json();
-        throw new Error(errorData.message || 'Analysis failed');
+
+      // Convert data URL to blob with error handling
+      let blob;
+      try {
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+        }
+        blob = await response.blob();
+      } catch (fetchError) {
+        console.error('Image fetch error:', fetchError);
+        throw new Error('Failed to load image for analysis');
       }
-      
-      const data = await apiResponse.json();
-      
-      // Update results
+
+      // Use the new AI service directly
+      const result = await analyzeWasteImage(blob, 'waste-image.jpg');
+
+      if (!result.success) {
+        throw new Error(result.error || 'Analysis failed');
+      }
+
+      // Update results mapping to match new service output
       setAnalysisResults({
-        wasteType: data.wasteType,
-        quality: data.quality,
-        confidence: data.confidence,
-        suggestedPrice: data.suggestedPrice,
-        industries: data.industries,
-        estimatedWeight: data.estimatedWeight,
+        wasteType: result.wasteType,
+        quality: result.quality,
+        confidence: result.confidence,
+        suggestedPrice: result.suggestedPrice,
+        industries: result.industries || [],
+        estimatedWeight: result.estimatedWeight,
       });
-      
+
       setIsAnalyzing(false);
       setAnalysisComplete(true);
-      
+
       toast({
         title: "Analysis Complete! 🎉",
-        description: `Identified as ${data.wasteType} with ${data.confidence}% confidence`,
+        description: `Identified as ${result.wasteType} with ${result.confidence}% confidence`,
       });
-      
+
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err instanceof Error ? err.message : 'Failed to analyze image');
       setIsAnalyzing(false);
-      
+
       // Fallback results
       setAnalysisResults({
         wasteType: "Rice Husk",
@@ -86,7 +86,7 @@ const AIAnalysis = () => {
         estimatedWeight: "200-800 kg",
       });
       setAnalysisComplete(true);
-      
+
       toast({
         title: "Analysis Completed with Fallback",
         description: "Using default values due to API error",
@@ -125,10 +125,9 @@ const AIAnalysis = () => {
 
         {/* Analyzing Badge */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md ${
-            error ? "bg-destructive text-destructive-foreground" :
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md ${error ? "bg-destructive text-destructive-foreground" :
             analysisComplete ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-          }`}>
+            }`}>
             {isAnalyzing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -242,10 +241,10 @@ const AIAnalysis = () => {
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Analysis Error</h3>
                 <p className="text-sm text-muted-foreground mb-3">{error}</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={analyzeImage}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={analyzeImageFunc}
                   className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
                   Try Again

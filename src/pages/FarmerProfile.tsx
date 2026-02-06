@@ -2,16 +2,19 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, User, MapPin, Phone, Mail, Edit, Settings, Shield, HelpCircle, LogOut, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FarmerBottomNav from "@/components/FarmerBottomNav";
+import { useAuth } from "@/context/AuthContext";
 
 const FarmerProfile = () => {
+  const { currentUser, signOut } = useAuth();
+
   const farmerData = {
-    name: "Rajesh Kumar",
-    phone: "+91 98765 43210",
-    email: "rajesh.kumar@email.com",
+    name: currentUser?.displayName || "Farmer",
+    phone: "+91 98765 43210", // Note: Persistent fields like phone/location would need Firestore
+    email: currentUser?.email || "No email",
     location: "Pune, Maharashtra",
     farmSize: "15 acres",
     crops: ["Rice", "Wheat", "Sugarcane"],
-    memberSince: "Jan 2024",
+    memberSince: currentUser?.metadata.creationTime ? new Date(currentUser.metadata.creationTime).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : "Jan 2024",
     totalListings: 12,
     totalEarnings: "₹45,200"
   };
@@ -22,6 +25,14 @@ const FarmerProfile = () => {
     { icon: HelpCircle, label: "Help & Support", path: "/farmer/help" },
     { icon: LogOut, label: "Logout", path: "/auth", action: "logout" },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -43,7 +54,7 @@ const FarmerProfile = () => {
         <div className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-6 text-primary-foreground relative overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 pattern-dots opacity-10" />
-          
+
           <div className="relative z-10">
             <div className="flex items-end gap-4 mb-4">
               <div className="relative">
@@ -104,7 +115,7 @@ const FarmerProfile = () => {
               <p className="font-medium text-foreground">{farmerData.phone}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
               <Mail className="w-5 h-5 text-muted-foreground" />
@@ -114,7 +125,7 @@ const FarmerProfile = () => {
               <p className="font-medium text-foreground">{farmerData.email}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
               <MapPin className="w-5 h-5 text-muted-foreground" />
@@ -133,7 +144,7 @@ const FarmerProfile = () => {
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
           <div className="flex flex-wrap gap-2">
             {farmerData.crops.map((crop, index) => (
-              <span 
+              <span
                 key={index}
                 className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium"
               >
@@ -149,20 +160,32 @@ const FarmerProfile = () => {
         <h3 className="text-lg font-semibold text-foreground mb-4">Settings</h3>
         <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
           {menuItems.map((item, index) => (
-            <Link
+            <div
               key={item.label}
-              to={item.path}
-              className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors ${
-                index !== menuItems.length - 1 ? "border-b border-border" : ""
-              }`}
+              onClick={item.action === "logout" ? handleLogout : undefined}
+              className={`flex items-center gap-4 p-4 hover:bg-muted/50 cursor-pointer transition-colors ${index !== menuItems.length - 1 ? "border-b border-border" : ""
+                }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
-                <item.icon className="w-5 h-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">{item.label}</p>
-              </div>
-            </Link>
+              {item.action !== "logout" ? (
+                <Link to={item.path} className="flex items-center gap-4 w-full">
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                    <item.icon className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{item.label}</p>
+                  </div>
+                </Link>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                    <item.icon className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{item.label}</p>
+                  </div>
+                </>
+              )}
+            </div>
           ))}
         </div>
       </div>
